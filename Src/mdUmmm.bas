@@ -1,63 +1,8 @@
 Attribute VB_Name = "mdUmmm"
 '=========================================================================
-' $Header: /BuildTools/UMMM/Src/mdUmmm.bas 24    16.12.16 12:07 Wqw $
 '
 '   Unattended Make My Manifest Project
-'   Copyright (c) 2009-2016 wqweto@gmail.com
-'
-' $Log: /BuildTools/UMMM/Src/mdUmmm.bas $
-' 
-' 24    16.12.16 12:07 Wqw
-' REF: impl dll command for std dll redirection
-'
-' 23    13.09.16 16:57 Wqw
-' REF: fix off by one error on trust info level
-'
-' 21    28.10.15 12:50 Wqw
-' REF: deduplicate api progid too
-'
-' 20    26.06.15 16:22 Wqw
-' REF: typelib version in registry is stored in hex
-'
-' 19    25.06.15 19:55 Wqw
-' REF: don't output BOM
-'
-' 16    27.04.15 22:37 Wqw
-' REF: additional controls progid based on tli name
-'
-' 15    30.01.15 19:46 Wqw
-' REF: impl win81 per-monitor dpi awareness
-'
-' 14    14.11.14 20:02 Wqw
-' REF: win10 support
-'
-' 13    14.11.14 19:48 Wqw
-' REF: impl var arg for supported oses
-'
-' 12    9.12.11 18:00 Wqw
-' REF: dump only dispatch kind interfaces
-'
-' 11    29.11.11 16:21 Wqw
-' REF: fixed dispatch vs dual interface proxy/stub clsid
-'
-' 10    22.02.11 15:49 Wqw
-' REF: LookupArray uses like operator
-'
-' 8     17.02.11 11:14 Wqw
-' REF: retval of bool functions
-'
-' 7     16.02.10 17:40 Wqw
-' REF: in dump classes if no typelib found did not close file tag
-'
-' 6     16.02.10 15:52 Wqw
-' REF: Main calls Ummm
-'
-' 5     16.02.10 13:56 Wqw
-' REF: console application, error handling, impl .NET COM assemblies
-' dependency
-'
-' 1     29.9.09 18:35 Wqw
-' Initial implementation
+'   Copyright (c) 2009-2019 wqweto@gmail.com
 '
 '=========================================================================
 Option Explicit
@@ -206,6 +151,13 @@ Private Function pvProcess(sFile As String) As String
                 '--- dpiaware [on_off] [per_monitor]
                 '---   on_off is true/false or 0/1
                 pvDumpDpiAware C_Bool(At(vRow, 1)), C_Bool(At(vRow, 2)), cOutput
+            Case "gdiscaling"
+                '--- gdiscaling [on_off]
+                '---   on_off is true/false or 0/1
+                pvDumpGdiScaling C_Bool(At(vRow, 1)), cOutput
+            Case "dpiawareness"
+                '--- dpiawareness elements
+                pvDumpDpiAwareness At(vRow, 1), cOutput
             Case "supportedos"
                 '--- supportedos <os_types>
                 '---   os_types are | separated OSes from { vista, win7, win8, win81 } or guids
@@ -572,6 +524,42 @@ Private Function pvDumpDpiAware(ByVal bAware As Boolean, ByVal bPerMonitor As Bo
     End If
     '--- success
     pvDumpDpiAware = True
+    Exit Function
+EH:
+    PrintError FUNC_NAME
+    Resume Next
+End Function
+
+Private Function pvDumpGdiScaling(ByVal bEnable As Boolean, cOutput As Collection) As Boolean
+    Const FUNC_NAME     As String = "pvDumpGdiScaling"
+    
+    On Error GoTo EH
+    If bEnable Then
+        cOutput.Add "    <asmv3:application>"
+        cOutput.Add "        <asmv3:windowsSettings xmlns=""http://schemas.microsoft.com/SMI/2017/WindowsSettings"">"
+        cOutput.Add "            <gdiScaling>true</gdiScaling>"
+        cOutput.Add "        </asmv3:windowsSettings>"
+        cOutput.Add "    </asmv3:application>"
+    End If
+    '--- success
+    pvDumpGdiScaling = True
+    Exit Function
+EH:
+    PrintError FUNC_NAME
+    Resume Next
+End Function
+
+Private Function pvDumpDpiAwareness(ByVal sValues As String, cOutput As Collection) As Boolean
+    Const FUNC_NAME     As String = "pvDumpDpiAwareness"
+    
+    On Error GoTo EH
+    cOutput.Add "    <asmv3:application>"
+    cOutput.Add "        <asmv3:windowsSettings xmlns=""http://schemas.microsoft.com/SMI/2016/WindowsSettings"">"
+    cOutput.Add Printf("            <dpiAwareness>%1</dpiAwareness>", sValues)
+    cOutput.Add "        </asmv3:windowsSettings>"
+    cOutput.Add "    </asmv3:application>"
+    '--- success
+    pvDumpDpiAwareness = True
     Exit Function
 EH:
     PrintError FUNC_NAME

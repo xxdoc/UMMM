@@ -107,6 +107,20 @@ Appends `dpiAware` tag for custom DPI aware applications.
       on_off         (optional) true/false or 0/1. Default is 0
       per_monitor    (optional) win81 per-monitor DPI awareness. Default is 0
 
+#### GdiScaling
+
+Appends `gdiScaling` tag for enabling GDI scaling
+
+    Parameters       [on_off]
+      on_off         (optional) true/false or 0/1. Default is 0
+
+#### DpiAwareness
+
+Appends `dpiAwareness` tag for custom DPI aware applications.
+
+    Parameters       <elements> comma separated
+
+
 #### SupportedOS
 
 Appends `supportedOS` tag.
